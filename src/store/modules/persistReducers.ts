@@ -7,7 +7,7 @@ export default (reducers: Reducer) => {
     {
       storage: AsyncStorage,
       key: 'ploomes',
-      whitelist: ['auth', 'commons'],
+      whitelist: ['auth', 'commons', 'contacts'],
     },
     reducers
   );

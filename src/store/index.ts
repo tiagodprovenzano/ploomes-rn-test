@@ -11,6 +11,7 @@ import ReduxThunk from 'redux-thunk';
 
 import type { CommonsAction, CommonsState } from './modules/commons/types';
 import type { AuthAction, AuthState } from './modules/auth/types';
+import type { ContactsAction, ContactsState } from './modules/contacts/types';
 
 import persistedReducer from './modules/persistReducers';
 
@@ -20,9 +21,10 @@ import sagas from './modules/rootSaga';
 export interface StoreState {
   auth: AuthState;
   commons: CommonsState;
+  contacts: ContactsState;
 }
 
-export type StoreAction = AuthAction | CommonsAction;
+export type StoreAction = AuthAction | CommonsAction | ContactsAction;
 
 const middlewares = [ReduxThunk];
 

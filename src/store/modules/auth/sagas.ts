@@ -26,20 +26,25 @@ export function* signIn({ payload }: ActionType<typeof signInRequest>) {
   try {
     const response = yield call(
       api.post,
-      "Self/Login", {
+      "Self/Login?$select=Id,Name,Email,UserKey,AvatarUrl", {
         Email: payload.email,
         Password: payload.password,
       }
     );
 
+    console.tron.log(response.data.value[0])
+
     if (response.status === 200) {
       const { UserKey: token } = response.data.value[0];
       const profile = response.data.value[0];
+
+
 
       yield put(availableButtons(true));
       yield put(saveProfile(profile));
       yield put(signInSuccess(token));
       yield put(setSigned());
+      yield put(cancelLoading());
     }
   } catch (error) {
     yield put(availableButtons(true));
@@ -68,17 +73,17 @@ export function* signIn({ payload }: ActionType<typeof signInRequest>) {
   }
 }
 
-export function* signOut({}: ActionType<typeof signOutRequest>) {
-  yield call(
-    api.post,
-    "Self/Logout",{
-      headers: {
-        "User-Key": userKey,
-      },
-    }
-  );
+// export function* signOut({}: ActionType<typeof signOutRequest>) {
+//   yield call(
+//     api.post,
+//     "Self/Logout",{
+//       headers: {
+//         "User-Key": userKey,
+//       },
+//     }
+//   );
 
-}
+// }
 
 
 export function* createProfile({
@@ -315,6 +320,6 @@ export function* createProfile({
 
 export default all([
   takeLatest('@auth/SIGN_IN_REQUEST', signIn),
-  takeLatest('@auth/SIGN_OUT', signOut),
+  // takeLatest('@auth/SIGN_OUT', signOut),
   takeLatest('@auth/REQUEST_CREATE_PROFILE', createProfile),
 ]);

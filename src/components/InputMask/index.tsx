@@ -5,25 +5,29 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { TextInputProps, StyleSheetProperties, View } from "react-native";
+import { View } from "react-native";
+import {
+  TextInputMaskOptionProp,
+  TextInputMaskProps,
+} from "react-native-masked-text";
 
 import theme from "../../styles/themes/theme";
 
-import { Container, SelectInput, Icon, Label } from "./styles";
+import { Container, TextInput, Icon, Label } from "./styles";
 
-interface InputProps extends TextInputProps {
+interface InputProps extends TextInputMaskProps {
   iconName: string;
   label?: string;
   error?: boolean;
-  type: boolean;
+  options?: TextInputMaskOptionProp;
 }
 
 interface InputRef {
   focus(): void;
 }
 
-const Select: React.ForwardRefRenderFunction<InputRef, InputProps> = (
-  { type, iconName, label, error, ...rest },
+const InputMask: React.ForwardRefRenderFunction<InputRef, InputProps> = (
+  { iconName, label, error, options, ...rest },
   ref
 ) => {
   const inputRef = useRef<any>();
@@ -45,7 +49,7 @@ const Select: React.ForwardRefRenderFunction<InputRef, InputProps> = (
   return (
     <>
       <View style={{ alignSelf: "flex-start" }}>
-        <Label>{label}</Label>
+        <Label style={{}}>{label}</Label>
       </View>
       <Container error={error} isFocused={focus}>
         <>
@@ -55,17 +59,18 @@ const Select: React.ForwardRefRenderFunction<InputRef, InputProps> = (
             color={focus || isFilled ? theme.primary : theme.gray}
           />
 
-          <SelectInput
-          // ref={inputRef}
-          // placeholderTextColor={theme.gray}
-          // onFocus={() => setFocus(true)}
-          // onBlur={() => handleInputBlur()}
-          // {...rest}
-          ></SelectInput>
+          <TextInput
+            ref={inputRef}
+            options={options}
+            placeholderTextColor={theme.gray}
+            onFocus={() => setFocus(true)}
+            onBlur={() => handleInputBlur()}
+            {...rest}
+          />
         </>
       </Container>
     </>
   );
 };
 
-export default forwardRef(Select);
+export default forwardRef(InputMask);
