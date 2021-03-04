@@ -1,5 +1,21 @@
 import { action } from 'typesafe-actions';
 
+export function getContactsRequest() {
+  return action('@contacts/GET_CONTACTS_REQUEST');
+}
+
+export function getContactsSuccess(contacts: []) {
+  return action('@contacts/GET_CONTACTS_SUCCESS', {contacts});
+}
+
+export function deleteContactRequest(contactId: number) {
+  return action('@contacts/DELETE_CONTACTS_REQUEST', {contactId});
+}
+
+export function deleteContactSuccess() {
+  return action('@contacts/DELETE_CONTACTS_SUCCESS');
+}
+
 export function createContactRequest(
   doc: string,
   email: string,

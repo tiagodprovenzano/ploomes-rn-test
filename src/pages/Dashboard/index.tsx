@@ -1,11 +1,17 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-
-import { Text } from "react-native";
+import { IContacts } from "@ploomes/ploomeststypes";
 
 import theme from "../../styles/themes/theme";
 
-import logo from "../../assets/logo.png";
+import type { StoreState } from "../../store";
+
+// import logo from "../../assets/logo.png";
+
+import { getContactsRequest } from "../../store/modules/contacts/actions";
+
+import ContactDeleteConfirm from "../../components/ContactDeleteConfirm";
 
 import {
   Container,
@@ -47,23 +53,52 @@ const data = [
   },
 ];
 
-const Dashboard: React.FC = () => {
+const Dashboard = () => {
+  const dispatch = useDispatch();
+
+  const contactsReducer = useSelector(
+    (state: StoreState): IContacts[] => state.contacts.contacts
+  );
+  const [contacts, setContacts] = useState<IContacts[]>([]);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [contactId, setContactId] = useState<number>();
+
+  useEffect(() => {
+    dispatch(getContactsRequest());
+  }, []);
+
+  useEffect(() => {
+    if (contactsReducer) {
+      setContacts(contactsReducer);
+    }
+  }, [contactsReducer]);
+
+  const handleDelete = useCallback((id) => {
+    setOpenDeleteModal(true);
+    setContactId(id);
+  }, []);
+
+  const handleEditContact = useCallback((id) => {
+    setOpenDeleteModal(true);
+    setContactId(id);
+  }, []);
+
   return (
     <Container>
       <Body>
         <Title>Contatos</Title>
         <ContactsList
-          data={data}
-          keyExtractor={(item) => String(item)}
+          data={contacts}
+          keyExtractor={(item) => String(item.Id)}
           renderItem={({ item }) => (
             <Card>
               {/* <ContainerAvatar> */}
-              <Avatar source={logo} />
+              <Avatar source={{ uri: `${item.AvatarUrl}` }} />
               {/* </ContainerAvatar> */}
               <InfoContainer>
-                <InfoName>{item.name}</InfoName>
-                <InfoText>{item.email}</InfoText>
-                <InfoText>{item.phone}</InfoText>
+                <InfoName>{item.Name}</InfoName>
+                <InfoText>{item.Email}</InfoText>
+                <InfoText>{item.StatusId}</InfoText>
               </InfoContainer>
               <IconsArea>
                 <Icon
@@ -71,16 +106,23 @@ const Dashboard: React.FC = () => {
                   size={20}
                   color={theme.primary}
                   style={{ paddingVertical: 10 }}
+                  onPress={() => handleEditContact(item.Id)}
                 />
                 <Icon
                   name="delete"
                   size={20}
                   color={theme.alert}
                   style={{ paddingVertical: 10 }}
+                  onPress={() => handleDelete(item.Id)}
                 />
               </IconsArea>
             </Card>
           )}
+        />
+        <ContactDeleteConfirm
+          openDeleteModal={openDeleteModal}
+          setOpenDeleteModal={setOpenDeleteModal}
+          contactId={contactId}
         />
       </Body>
     </Container>

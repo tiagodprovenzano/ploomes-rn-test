@@ -13,6 +13,15 @@ const INITIAL_STATE: ContactsState = {
 export default function auth(state = INITIAL_STATE, action: ContactsAction) {
   return produce(state, (draft: Draft<ContactsState>) => {
     switch (action.type) {
+      case '@contacts/GET_CONTACTS_REQUEST': {
+        draft.loading = true;
+        break;
+      }
+      case '@contacts/GET_CONTACTS_SUCCESS': {
+        draft.loading = false;
+        draft.contacts = action.payload.contacts;
+        break;
+      }
       case '@contacts/CREATE_CONTACT_REQUEST': {
         draft.loading = true;
         break;

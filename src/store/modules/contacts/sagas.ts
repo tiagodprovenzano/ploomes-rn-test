@@ -11,6 +11,9 @@ import api from '../../../services/api';
 import NavigationService from '../../../helpers/navigation';
 
 import {
+  getContactsSuccess,
+  deleteContactRequest,
+  deleteContactSuccess,
   createContactRequest,
   createContactSuccess,
   getOriginsContactsSuccess,
@@ -21,6 +24,82 @@ import {
 } from './actions';
 
 import { availableButtons } from '../commons/actions';
+
+export function* getContacts() {
+  try {
+    const response = yield call(
+      api.get, 'Contacts', {
+        headers: {
+          "User-Key": userKey,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      yield put(getContactsSuccess(response.data.value));
+    }
+  } catch (error) {
+    if (error.response) {
+      switch (error.response.status) {
+        case 500:
+          break;
+        case 409:
+          break;
+        case 404:
+          break;
+        case 401:
+          Alert.alert(
+            "Opss, Erro ao efetuar o Login!",
+            "Verifique os dados e tente novamente."
+          );
+          break;
+        case 400:
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+export function* deleteContact({ payload }: ActionType<typeof deleteContactRequest>) {
+  try {
+    const {contactId} = payload;
+
+    const response = yield call(
+      api.delete, `Contacts(${contactId})`, {
+        headers: {
+          "User-Key": userKey,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      yield put(deleteContactSuccess());
+    }
+  } catch (error) {
+    if (error.response) {
+      switch (error.response.status) {
+        case 500:
+          break;
+        case 409:
+          break;
+        case 404:
+          break;
+        case 401:
+          Alert.alert(
+            "Opss, Erro ao efetuar o Login!",
+            "Verifique os dados e tente novamente."
+          );
+          break;
+        case 400:
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
 
 export function* createContact({ payload }: ActionType<typeof createContactRequest>) {
   try {
@@ -112,8 +191,6 @@ export function* getOriginsContacts() {
       }
     );
 
-    console.tron.log(response.data.value, 'getOriginsContacts');
-
     if (response.status === 200) {
       yield put(getOriginsContactsSuccess(response.data.value));
     }
@@ -150,8 +227,6 @@ export function* getTypesContacts() {
         },
       }
     );
-
-    console.tron.log(response.data.value, 'getTypesContacts');
 
     if (response.status === 200) {
       yield put(getTypesContactsSuccess(response.data.value));
@@ -225,6 +300,8 @@ export function* getCity({
 }
 
 export default all([
+  takeLatest('@contacts/GET_CONTACTS_REQUEST', getContacts),
+  takeLatest('@contacts/DELETE_CONTACTS_REQUEST', deleteContact),
   takeLatest('@contacts/CREATE_CONTACT_REQUEST', createContact),
   takeLatest('@contacts/GET_ORIGINS_CONTACTS_REQUEST', getOriginsContacts),
   takeLatest('@contacts/GET_TYPES_CONTACTS_REQUEST', getTypesContacts),

@@ -69,7 +69,7 @@ export const ContainerAvatar = styled.View`
   height: 100px;
 `;
 
-export const Avatar = styled.View.attrs({
+export const Avatar = styled.Image.attrs({
   // resizeMode: 'contain'
 })`
   width: ${hp('10%')};
