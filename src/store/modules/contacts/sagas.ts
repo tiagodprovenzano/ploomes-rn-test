@@ -2,6 +2,8 @@ import { takeLatest, call, put, all, select } from 'redux-saga/effects';
 import { Alert } from 'react-native';
 import axios from 'axios';
 
+import { userKey } from "../../../config";
+
 import type { ActionType } from 'typesafe-actions';
 import type { StoreState } from '../../../store';
 
@@ -11,13 +13,14 @@ import NavigationService from '../../../helpers/navigation';
 import {
   createContactRequest,
   createContactSuccess,
+  getOriginsContactsSuccess,
+  getTypesContactsSuccess,
   getCitiesRequest,
   getCitiesSuccess,
   cancelLoading,
 } from './actions';
 
 import { availableButtons } from '../commons/actions';
-import { userKey } from '../../../config';
 
 export function* createContact({ payload }: ActionType<typeof createContactRequest>) {
   try {
@@ -36,6 +39,8 @@ export function* createContact({ payload }: ActionType<typeof createContactReque
       fieldKey,
       stringValue,
     } = payload;
+
+
 
     const response = yield call(
       api.post,
@@ -97,7 +102,83 @@ export function* createContact({ payload }: ActionType<typeof createContactReque
   }
 }
 
+export function* getOriginsContacts() {
+  try {
+    const response = yield call(
+      api.get, 'Contacts@Origins', {
+        headers: {
+          "User-Key": userKey,
+        },
+      }
+    );
 
+    console.tron.log(response.data.value, 'getOriginsContacts');
+
+    if (response.status === 200) {
+      yield put(getOriginsContactsSuccess(response.data.value));
+    }
+  } catch (error) {
+    if (error.response) {
+      switch (error.response.status) {
+        case 500:
+          break;
+        case 409:
+          break;
+        case 404:
+          break;
+        case 401:
+          Alert.alert(
+            "Opss, Erro ao efetuar o Login!",
+            "Verifique os dados e tente novamente."
+          );
+          break;
+        case 400:
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+export function* getTypesContacts() {
+  try {
+    const response = yield call(
+      api.get, 'Contacts@Types', {
+        headers: {
+          "User-Key": userKey,
+        },
+      }
+    );
+
+    console.tron.log(response.data.value, 'getTypesContacts');
+
+    if (response.status === 200) {
+      yield put(getTypesContactsSuccess(response.data.value));
+    }
+  } catch (error) {
+    if (error.response) {
+      switch (error.response.status) {
+        case 500:
+          break;
+        case 409:
+          break;
+        case 404:
+          break;
+        case 401:
+          Alert.alert(
+            "Opss, Erro ao efetuar o Login!",
+            "Verifique os dados e tente novamente."
+          );
+          break;
+        case 400:
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
 
 export function* getCity({
   payload,
@@ -105,7 +186,11 @@ export function* getCity({
   try {
     const response = yield call(
       api.get,
-      `Cities?$filter=Name+eq+'${payload.cityName}'`,
+      `Cities?$filter=Name+eq+'${payload.cityName}'`, {
+        headers: {
+          "User-Key": userKey,
+        },
+      }
     );
 
     if (response.status === 200) {
@@ -139,12 +224,10 @@ export function* getCity({
   }
 }
 
-
-
-
-
 export default all([
   takeLatest('@contacts/CREATE_CONTACT_REQUEST', createContact),
+  takeLatest('@contacts/GET_ORIGINS_CONTACTS_REQUEST', getOriginsContacts),
+  takeLatest('@contacts/GET_TYPES_CONTACTS_REQUEST', getTypesContacts),
   takeLatest('@contacts/GET_CITIES_REQUEST', getCity),
   // takeLatest('@contacts/REQUEST_CREATE_PROFILE', createProfile),
 ]);

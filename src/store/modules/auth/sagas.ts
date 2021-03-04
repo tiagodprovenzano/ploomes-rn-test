@@ -32,8 +32,6 @@ export function* signIn({ payload }: ActionType<typeof signInRequest>) {
       }
     );
 
-    console.tron.log(response.data.value[0])
-
     if (response.status === 200) {
       const { UserKey: token } = response.data.value[0];
       const profile = response.data.value[0];

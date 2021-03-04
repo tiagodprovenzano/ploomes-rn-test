@@ -1,11 +1,5 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
-import {
-  FlatList,
-  KeyboardAvoidingView,
-  Alert,
-  View,
-  Platform,
-} from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { FlatList, Alert, View, Platform } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useFormik } from "formik";
 import axios from "axios";
@@ -17,6 +11,7 @@ import RNPickerSelect from "react-native-picker-select";
 
 import {
   IContactsOrigins,
+  IContactsTypes,
   IFields,
   IFieldsEntities,
 } from "@ploomes/ploomeststypes";
@@ -40,6 +35,8 @@ import { sendImageAvatar } from "../../utils/sendImageAvatar";
 import { signOutRequest } from "../../store/modules/auth/actions";
 import {
   createContactRequest,
+  getOriginsContactsRequest,
+  getTypesContactsRequest,
   getCitiesRequest,
 } from "../../store/modules/contacts/actions";
 
@@ -68,12 +65,17 @@ import {
   SelectIcon,
 } from "./styles";
 
-interface TypeSelectOriginsContacts {
+interface TypeSelectOriginsContacts extends IContactsOrigins {
   label: string | undefined;
   value: string | undefined;
 }
 
-const Home = () => {
+interface TypeSelectTypesContacts extends IContactsTypes {
+  label: string | undefined;
+  value: string | undefined;
+}
+
+const CreateContacts = () => {
   const dispatch = useDispatch();
 
   const nameRef = useRef<any>(null);
@@ -90,12 +92,18 @@ const Home = () => {
   const cityRef = useRef<any>(null);
 
   const loading = useSelector((state: StoreState) => state.contacts.loading);
+  const contactsOriginsReducer = useSelector(
+    (state: StoreState): IContactsOrigins[] => state.contacts.contactsOrigins
+  );
+  const contactsTypesReducer = useSelector(
+    (state: StoreState): IContactsTypes[] => state.contacts.contactsTypes
+  );
 
   const [avatar, setAvatar] = useState("");
   const [birthDate, setBirthDate] = useState("11/11/1989");
   const [address, setAdress] = useState("");
   const [number, setNumber] = useState("");
-  const [originId, setOriginId] = useState("");
+  // const [originId, setOriginId] = useState("");
   const [complement, setComplement] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const [state, setState] = useState("");
@@ -215,11 +223,12 @@ const Home = () => {
       email: "vini2@vini.com",
       zipCode: "1234",
       originId: "1234",
+      contactType: "1234",
       // email: '',
       // password: '',
     },
     onSubmit: () => {
-      console.log(values);
+      // console.log(values);
       // dispatch(createContactRequest(
       //   name,
       //   neighborhood,
@@ -241,11 +250,46 @@ const Home = () => {
   const [contactsOrigins, setContactsOrigins] = useState<IContactsOrigins[]>(
     []
   );
+  const [contactsTypes, setContactsTypes] = useState<IContactsTypes[]>([]);
   // const [fieldsEntities, setFieldsEntities] = useState<IFieldsEntities[]>([]);
-  const [newOriginsContacts, setNewOriginsContacts] = useState<
-    TypeSelectOriginsContacts[]
-  >([]);
-  // const [fieldsEntities, setFieldsEntities] = useState<IFieldsEntities[]>([]);
+
+  useEffect(() => {
+    dispatch(getOriginsContactsRequest());
+  }, []);
+
+  useEffect(() => {
+    if (contactsOriginsReducer) {
+      let origins: TypeSelectOriginsContacts[] = [];
+
+      contactsOriginsReducer?.map((item) =>
+        origins.push({
+          label: item.Name,
+          value: item?.Name,
+        })
+      );
+
+      setContactsOrigins(origins);
+    }
+  }, [contactsOriginsReducer]);
+
+  useEffect(() => {
+    dispatch(getTypesContactsRequest());
+  }, []);
+
+  useEffect(() => {
+    if (contactsTypesReducer) {
+      let typesContacts: TypeSelectTypesContacts[] = [];
+
+      contactsTypesReducer?.map((item) =>
+        typesContacts.push({
+          label: item.Name,
+          value: item?.Name,
+        })
+      );
+
+      setContactsTypes(typesContacts);
+    }
+  }, [contactsTypesReducer]);
 
   // useEffect(() => {
   //   (async () => {
@@ -259,19 +303,6 @@ const Home = () => {
   //     console.tron.log("Fields@Types", response.data.value);
   //   })();
   // }, []);
-
-  useEffect(() => {
-    (async () => {
-      const response = await api.get("Contacts@Origins", {
-        headers: {
-          "User-Key": userKey,
-        },
-      });
-
-      setContactsOrigins(response.data.value);
-      // console.tron.log("Contacts@Origins", response.data.value);
-    })();
-  }, []);
 
   // useEffect(() => {
   //   (async () => {
@@ -289,40 +320,6 @@ const Home = () => {
   function handleSignOut() {
     dispatch(signOutRequest());
   }
-
-  useEffect(() => {
-    if (contactsOrigins) {
-      let origins: TypeSelectOriginsContacts[] = [];
-
-      contactsOrigins?.map((item) =>
-        origins.push({
-          label: item?.Name,
-          value: item?.Name,
-        })
-      );
-
-      // console.tron.log({ origins });
-
-      setNewOriginsContacts(origins);
-    }
-  }, [contactsOrigins]);
-
-  useEffect(() => {
-    if (contactsOrigins) {
-      let origins: TypeSelectOriginsContacts[] = [];
-
-      contactsOrigins?.map((item) =>
-        origins.push({
-          label: item?.Name,
-          value: item?.Name,
-        })
-      );
-
-      // console.tron.log({ origins });
-
-      setNewOriginsContacts(origins);
-    }
-  }, [contactsOrigins]);
 
   return (
     <Container>
@@ -442,7 +439,7 @@ const Home = () => {
           placeholder={"Escolha a origem do contato"}
           error={!!errors.originId}
           onValueChange={(value) => console.log(value)}
-          items={newOriginsContacts}
+          items={contactsOrigins}
           // onSubmitEditing={() => passwordRef?.current.focus()}
         />
         {errors.originId && <TextAlert>{errors.originId}</TextAlert>} */}
@@ -457,7 +454,7 @@ const Home = () => {
                 <SelectIcon name="home" size={18} color={theme.primary} />
 
                 <SelectInputIOS>
-                  {newOriginsContacts.map((item) => (
+                  {contactsOrigins.map((item) => (
                     <SelectInputIOS.Item
                       label={item.label}
                       value={item.value}
@@ -480,7 +477,7 @@ const Home = () => {
                   selectedValue={values.originId}
                   onValueChange={handleChange("originId")}
                 >
-                  {newOriginsContacts.map((item) => (
+                  {contactsOrigins.map((item) => (
                     <SelectInputAndroid.Item
                       label={item.label}
                       value={item.value}
@@ -501,7 +498,7 @@ const Home = () => {
 
               {Platform.OS === "ios" ? (
                 <SelectInputIOS>
-                  {newOriginsContacts.map((item) => (
+                  {contactsOrigins.map((item) => (
                     <SelectInputIOS.Item
                       label={item.label}
                       value={item.value}
@@ -510,7 +507,7 @@ const Home = () => {
                 </SelectInputIOS>
               ) : (
                 <SelectInputAndroid>
-                  {newOriginsContacts.map((item) => (
+                  {contactsOrigins.map((item) => (
                     <SelectInputAndroid.Item
                       label={item.label}
                       value={item.value}
@@ -523,6 +520,29 @@ const Home = () => {
         </SelectArea> */}
 
         {errors.originId && <TextAlert>{errors.originId}</TextAlert>}
+
+        <SelectArea>
+          <SelectLabelArea>
+            <SelectLabel>Tipo do Contato</SelectLabel>
+          </SelectLabelArea>
+          <SelectContainer error={!!errors.contactType}>
+            <>
+              <SelectIcon name="home" size={18} color={theme.primary} />
+
+              <SelectInputAndroid
+                selectedValue={values.contactType}
+                onValueChange={handleChange("originId")}
+              >
+                {contactsTypes.map((item) => (
+                  <SelectInputAndroid.Item
+                    label={item.label}
+                    value={item.value}
+                  />
+                ))}
+              </SelectInputAndroid>
+            </>
+          </SelectContainer>
+        </SelectArea>
 
         <Input
           ref={cepRef}
@@ -672,4 +692,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default CreateContacts;

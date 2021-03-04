@@ -4,9 +4,10 @@ import {RFValue} from 'react-native-responsive-fontsize'
 import {
   heightPercentageToDP as hp
 } from 'react-native-responsive-screen';
-import RNPickerSelect from "react-native-picker-select";
+// import RNPickerSelect from "react-native-picker-select";
 import {Picker, PickerIOS} from '@react-native-picker/picker';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 
 import theme from '../../styles/themes/theme';
 

@@ -1,6 +1,15 @@
 import { action } from 'typesafe-actions';
 
 export function createContactRequest(
+  doc: string,
+  email: string,
+  birthdateValid: string,
+  address: string,
+//   number: string,
+  complement: string,
+//   neighborhood: string,
+  state: string,
+  city: string,
   name: string,
   neighborhood: string,
   zipCode: string,
@@ -37,8 +46,23 @@ export function createContactSuccess() {
 export function cancelLoading() {
   return action('@contacts/CANCEL_LOADING');
 }
-getCitiesRequest
 
+
+export function getOriginsContactsRequest() {
+  return action('@contacts/GET_ORIGINS_CONTACTS_REQUEST');
+}
+
+export function getOriginsContactsSuccess(contactsOrigins: []) {
+  return action('@contacts/GET_ORIGINS_CONTACTS_SUCCESS', {contactsOrigins});
+}
+
+export function getTypesContactsRequest() {
+  return action('@contacts/GET_TYPES_CONTACTS_REQUEST');
+}
+
+export function getTypesContactsSuccess(contactsTypes: []) {
+  return action('@contacts/GET_TYPES_CONTACTS_SUCCESS', {contactsTypes});
+}
 
 export function getCitiesRequest(cityName: string) {
   return action('@contacts/GET_CITIES_REQUEST', {cityName});
