@@ -37,10 +37,6 @@ const ContactDeleteConfirm = ({
   async function handleDelete() {
     dispatch(deleteContactRequest(contactId));
 
-    // const newCart = await cart?.filter(
-    //   (prod) => prod.scheduleId !== appointmentForDelete,
-    // );
-
     setOpenDeleteModal(false);
   }
 

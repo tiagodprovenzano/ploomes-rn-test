@@ -10,19 +10,9 @@ const Tab = createBottomTabNavigator();
 export default function HomeStack() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="Dashboard" component={Dashboard} />
-      <Tab.Screen name="Profile" component={Profile} />
-      <Tab.Screen name="CreateContacts" component={CreateContacts} />
+      <Tab.Screen name="Contatos" component={Dashboard} />
+      <Tab.Screen name="Adicionar Contato" component={CreateContacts} />
+      <Tab.Screen name="Perfil" component={Profile} />
     </Tab.Navigator>
   );
 }
-
-// const Stack = createStackNavigator();
-
-// export default function HomeStack() {
-//   return (
-//     <Stack.Navigator screenOptions={{headerShown: false}}>
-//       <Stack.Screen name="Home" component={Home} />
-//     </Stack.Navigator>
-//   );
-// }

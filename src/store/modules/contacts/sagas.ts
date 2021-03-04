@@ -11,6 +11,7 @@ import api from '../../../services/api';
 import NavigationService from '../../../helpers/navigation';
 
 import {
+  getContactsRequest,
   getContactsSuccess,
   deleteContactRequest,
   deleteContactSuccess,
@@ -76,6 +77,7 @@ export function* deleteContact({ payload }: ActionType<typeof deleteContactReque
 
     if (response.status === 200) {
       yield put(deleteContactSuccess());
+      yield put(getContactsRequest());
     }
   } catch (error) {
     if (error.response) {

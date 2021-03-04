@@ -30,39 +30,3 @@ export function saveProfile(profile: object) {
 export function setSigned() {
   return action('@auth/SET_SIGNED');
 }
-
-export function requestCreateProfile(
-  photoUrl: string,
-  name: string,
-  doc: string,
-  email: string,
-  birthdateValid: string,
-  phoneNumber: string,
-  address: string,
-  number: string,
-  complement: string,
-  neighborhood: string,
-  state: string,
-  city: string,
-  cep: string,
-  password: string,
-  fcmToken: string
-) {
-  return action('@auth/REQUEST_CREATE_PROFILE', {
-    photoUrl,
-    name,
-    doc,
-    email,
-    birthdateValid,
-    phoneNumber,
-    address,
-    number,
-    complement,
-    neighborhood,
-    state,
-    city,
-    cep,
-    password,
-    fcmToken,
-  });
-}

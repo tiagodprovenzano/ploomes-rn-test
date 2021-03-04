@@ -26,52 +26,25 @@ import {
   IconsArea,
 } from "./styles";
 
-const data = [
-  {
-    name: "Vinicius",
-    email: "vini@gmail.com",
-    avatar_url: "",
-    phone: "11 33333-4444",
-  },
-  {
-    name: "Vinicius1",
-    email: "vini1@gmail.com",
-    avatar_url: "",
-    phone: "11 33333-4444",
-  },
-  {
-    name: "Vinicius2",
-    email: "vini2@gmail.com",
-    avatar_url: "",
-    phone: "11 33333-4444",
-  },
-  {
-    name: "Vinicius3",
-    email: "vini3@gmail.com",
-    avatar_url: "",
-    phone: "11 33333-4444",
-  },
-];
-
 const Dashboard = () => {
   const dispatch = useDispatch();
 
-  const contactsReducer = useSelector(
+  const contacts = useSelector(
     (state: StoreState): IContacts[] => state.contacts.contacts
   );
-  const [contacts, setContacts] = useState<IContacts[]>([]);
+  // const [contacts, setContacts] = useState<IContacts[]>([] as IContacts[]);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [contactId, setContactId] = useState<number>();
 
-  useEffect(() => {
-    dispatch(getContactsRequest());
-  }, []);
+  // useEffect(() => {
+  //   dispatch(getContactsRequest());
+  // }, []);
 
-  useEffect(() => {
-    if (contactsReducer) {
-      setContacts(contactsReducer);
-    }
-  }, [contactsReducer]);
+  // useEffect(() => {
+  //   if (contactsReducer) {
+  //     setContacts(contactsReducer);
+  //   }
+  // }, [contactsReducer]);
 
   const handleDelete = useCallback((id) => {
     setOpenDeleteModal(true);
