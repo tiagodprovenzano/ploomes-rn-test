@@ -36,10 +36,10 @@ From your command line:
   <img alt="PloomesAppTestScreens" title="#PloomesAppTestScreens" src="./assets/images/icon.png" width="200px">
 </p>
 
-### Install App AndroidƲ
+### Install App Android
 
 ```bash
-# Clone this repositoryƲƲ
+# Clone this repository
 $ git clone https://github.com/ViniCleFer/ploomes-rn-test.git
 
 # Install dependencies
