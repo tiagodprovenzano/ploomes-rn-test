@@ -8,6 +8,8 @@ const INITIAL_STATE: ContactsState = {
   locale: {},
   contactsOrigins: [],
   contactsTypes: [],
+  contactOrigin: [],
+  contactType: [],
 };
 
 export default function auth(state = INITIAL_STATE, action: ContactsAction) {
@@ -51,29 +53,14 @@ export default function auth(state = INITIAL_STATE, action: ContactsAction) {
         draft.locale = action.payload.locale;
         break;
       }
-      // case '@contacts/SIGN_IN_SUCCESS': {
-      //   draft.token = action.payload.token;
-      //   draft.loading = false;
-      //   break;
-      // }
-      // case '@contacts/SIGN_IN_FAILURE': {
-      //   draft.loading = false;
-      //   break;
-      // }
-      // case '@contacts/SIGN_OUT': {
-      //   draft.token = '';
-      //   draft.signed = false;
-      //   draft.profile = {};
-      //   break;
-      // }
-      // case '@contacts/SAVE_PROFILE': {
-      //   draft.profile = action.payload.profile;
-      //   break;
-      // }
-      // case '@contacts/SET_SIGNED': {
-      //   draft.signed = true;
-      //   break;
-      // }
+      case '@contacts/GET_ORIGIN_CONTACT_SUCCESS': {
+        draft.contactOrigin = action.payload.contactOrigin;
+        break;
+      }
+      case '@contacts/GET_TYPE_CONTACT_SUCCESS': {
+        draft.contactType = action.payload.contactType;
+        break;
+      }
       default:
     }
   });

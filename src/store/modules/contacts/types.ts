@@ -9,4 +9,6 @@ export interface ContactsState {
   readonly locale: {};
   readonly contactsOrigins: [];
   readonly contactsTypes: [];
+  readonly contactOrigin: [];
+  readonly contactType: [];
 }

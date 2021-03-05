@@ -10,16 +10,16 @@ import theme from '../../styles/themes/theme';
 
 export const Container = styled.ScrollView.attrs({
   showsVerticalScrollIndicator: false,
+  contentContainerStyle: {
+    backgroundColor: theme.white,
+    paddingHorizontal: 15,
+    flex: 1,
+  }
 })`
-  flex: 1;
-  margin-left: ${wp('5%')};
-  padding-right: ${Platform.OS === 'ios' ? wp('1%') : wp('5%')};
-  width: 370;
-  margin-bottom: ${hp('3%')};
 `;
 
 export const Top = styled.View`
-  flex: 1;
+  /* flex: 1; */
   flex-direction: row;
   margin-top: ${hp('2%')};
   align-items: center;
@@ -55,9 +55,7 @@ export const Name = styled.Text.attrs({
   font-family: ${theme.fontFamilyBold};
 `;
 
-export const Especialty = styled.Text.attrs({
-  // numberOfLines: 2,
-})`
+export const Especialty = styled.Text`
   color: ${theme.gray};
   font-size: ${RFValue(12)};
   font-family: ${theme.fontFamilyBold};
@@ -74,7 +72,6 @@ export const InfoView = styled.View`
   flex-direction: row;
   align-items: center;
 `;
-
 
 export const Linkedin = styled.Text`
   color: ${theme.gray};
@@ -156,4 +153,10 @@ export const ExperienciesCourse = styled.Text`
   font-family: ${theme.fontFamilyNormal};
   width: ${wp('75%')};
   font-weight: 500;
+`;
+
+export const ButtonArea = styled.View`
+  padding: 20px 20px 0;
+  flex: 1;
+  justify-content: flex-end;
 `;

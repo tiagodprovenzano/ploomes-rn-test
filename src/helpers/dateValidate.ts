@@ -16,4 +16,16 @@ export default class DateHelper {
 
     return day > 0 && day <= monthLength[month - 1];
   }
+
+  static formatedDate(date: string) {
+    const formatedDate = date.substring(0, 10);
+
+    const dateParts = formatedDate.split('-');
+
+    const newDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+    return newDate;
+  }
 }
+
+

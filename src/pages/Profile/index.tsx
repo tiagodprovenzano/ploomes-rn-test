@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Platform,
   View,
@@ -15,6 +15,10 @@ import {
 import { ISelf } from "@ploomes/ploomeststypes";
 
 import type { StoreState } from "../../store";
+
+import { signOutRequest } from "../../store/modules/auth/actions";
+
+import Button from "../../components/Button";
 
 import {
   Container,
@@ -39,19 +43,34 @@ import {
   Experiencies,
   ExperienciesShow,
   ExperienciesCourse,
+  ButtonArea,
 } from "./styles";
 
 export default function ProfessionalProfile() {
+  const dispatch = useDispatch();
+
   const profile = useSelector(
     (state: StoreState): ISelf => state.auth.profile as ISelf
   );
+
+  function handleSignOut() {
+    dispatch(signOutRequest());
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Container>
         <Top>
           <AvatarArea>
-            <Avatar source={{ uri: `${profile.AvatarUrl}` }} />
+            {profile?.AvatarUrl !== null ? (
+              <Avatar source={{ uri: `${profile.AvatarUrl}` }} />
+            ) : (
+              <Avatar
+                source={{
+                  uri: `https://ui-avatars.com/api/?background=786fb0&color=fff&&name=${profile.Name}`,
+                }}
+              />
+            )}
           </AvatarArea>
           <Description>
             <Name
@@ -117,6 +136,9 @@ export default function ProfessionalProfile() {
             </ExperienciesShow>
           </Experiencies>
         </ExperienciesView>
+        <ButtonArea>
+          <Button onPress={handleSignOut}>Sair</Button>
+        </ButtonArea>
       </Container>
     </SafeAreaView>
   );

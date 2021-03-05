@@ -24,7 +24,7 @@ import {
 interface Props {
   openDeleteModal: boolean;
   setOpenDeleteModal: (boolean) => void;
-  contactId: number;
+  contactId: string;
 }
 
 const ContactDeleteConfirm = ({

@@ -4,6 +4,10 @@ import type { ActionType } from 'typesafe-actions';
 
 import api from '../../../services/api';
 
+import { userKey } from "../../../config";
+
+import NavigationService from '../../../helpers/navigation';
+
 import {
   signInRequest,
   signInSuccess,
@@ -11,7 +15,7 @@ import {
   saveProfile,
   setSigned,
   cancelLoading,
-  // signOutRequest,
+  signOutRequest,
 } from './actions';
 
 import { availableButtons } from '../commons/actions';
@@ -66,17 +70,51 @@ export function* signIn({ payload }: ActionType<typeof signInRequest>) {
   }
 }
 
-// export function* signOut({}: ActionType<typeof signOutRequest>) {
-//   yield call(
-//     api.post,
-//     "Self/Logout",{
-//       headers: {
-//         "User-Key": userKey,
-//       },
-//     }
-//   );
+export function* signOut({}: ActionType<typeof signOutRequest>) {
+  try {
 
-// }
+    const response = yield call(
+      api.post,
+      "Self/Logout",{
+        headers: {
+          "User-Key": userKey,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      NavigationService.navigate({routeName: 'Login'})
+      yield put(cancelLoading());
+    }
+  } catch (error) {
+    yield put(availableButtons(true));
+    yield put(cancelLoading());
+    yield put(signInFailure());
+    if (error.response) {
+      switch (error.response.status) {
+        case 500:
+          break;
+        case 409:
+          break;
+        case 404:
+          break;
+        case 401:
+          Alert.alert(
+            "Opss, Erro ao efetuar o Login!",
+            "Verifique os dados e tente novamente."
+          );
+          break;
+        case 400:
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+
+
+}
 
 export default all([
   takeLatest('@auth/SIGN_IN_REQUEST', signIn),

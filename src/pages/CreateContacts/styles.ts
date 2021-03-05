@@ -21,14 +21,13 @@ export const Container = styled.KeyboardAvoidingView.attrs({
   enabled: true,
 })`
   flex: 1;
+  background-color: ${theme.white};
 `;
 
 export const Body = styled.ScrollView.attrs({
   contentContainerStyle: {
     backgroundColor: 'white',
     paddingHorizontal: 15,
-    paddingTop: Platform.OS === 'ios' ? 20 : 0,
-    paddingBottom: 20,
   },
   showsVerticalScrollIndicator: false,
 })``;
