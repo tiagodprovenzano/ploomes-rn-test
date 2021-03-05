@@ -1,9 +1,8 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import Home from "../pages/Home";
 import Profile from "../pages/Profile";
-import CreateContacts from "../pages/CreateContacts";
+import ContactStack from "./contact.routes";
 
 import TabItem from "../components/TabItem";
 
@@ -13,27 +12,15 @@ export default function HomeStack() {
   return (
     <Tab.Navigator>
       <Tab.Screen
-        name="Home"
-        component={Home}
+        name="ContactStack"
+        component={ContactStack}
         options={{
           tabBarButton: (props) => (
             <TabItem label="Lista" iconName="clipboard-list" {...props} />
           ),
         }}
       />
-      <Tab.Screen
-        name="Contato"
-        component={CreateContacts}
-        options={{
-          tabBarButton: (props) => (
-            <TabItem
-              label="Contato"
-              iconName="card-account-details"
-              {...props}
-            />
-          ),
-        }}
-      />
+
       <Tab.Screen
         name="Perfil"
         component={Profile}

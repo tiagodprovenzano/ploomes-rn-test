@@ -11,4 +11,5 @@ export interface ContactsState {
   readonly contactsTypes: [];
   readonly contactOrigin: [];
   readonly contactType: [];
+  readonly editingContact: [];
 }

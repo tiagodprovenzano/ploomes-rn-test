@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { SafeAreaView, Alert, View, Platform } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useFormik } from "formik";
@@ -7,8 +7,9 @@ import { mask } from "remask";
 import RNFetchBlob from "rn-fetch-blob";
 import ImagePicker from "react-native-image-picker";
 import ImageResizer from "react-native-image-resizer";
-import { useRoute } from "@react-navigation/native";
-// import RNPickerSelect from "react-native-picker-select";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { PickerIOS } from "@react-native-picker/picker";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 import {
   IContactsOrigins,
@@ -23,6 +24,9 @@ import logo from "../../assets/logo.png";
 import AuthContacts from "../../validations/authContacts";
 
 import DateHelper from "../../helpers/dateValidate";
+import DocHelper from "../../helpers/docValidate";
+
+import NavigationService from "../../helpers/navigation";
 
 import type { StoreState } from "../../store";
 
@@ -30,11 +34,14 @@ import { sendImageAvatar } from "../../utils/sendImageAvatar";
 
 import {
   createContactRequest,
+  getEditingContactRequest,
   getOriginsContactsRequest,
   getTypesContactsRequest,
   getOriginContactRequest,
   getTypeContactRequest,
   getCitiesRequest,
+  updateContactRequest,
+  getEditingContactSuccess,
 } from "../../store/modules/contacts/actions";
 
 import theme from "../../styles/themes/theme";
@@ -59,32 +66,37 @@ import {
   SelectInputAndroid,
   SelectInputIOS,
   SelectIcon,
+  Loading,
+  BackButton,
 } from "./styles";
 
 interface TypeSelectOriginsContacts extends IContactsOrigins {
   label: string | undefined;
-  value: string | undefined;
-  id: number | undefined;
+  value: object | undefined;
 }
 
 interface TypeSelectTypesContacts {
   label: string;
-  value: string;
-  id: number;
+  value: object;
 }
 
-interface RouteParams extends IContactsPhones {
-  contact: IContacts;
+interface RouteParams {
+  contatcId: string;
 }
 
 const CreateContacts = () => {
   const dispatch = useDispatch();
 
   const route = useRoute();
+  const navigation = useNavigation();
 
   const routeParams = route.params as RouteParams;
 
-  console.tron.log({ routeParams });
+  useEffect(() => {
+    if (routeParams) {
+      dispatch(getEditingContactRequest(routeParams?.contatcId));
+    }
+  }, [routeParams]);
 
   const nameRef = useRef<any>(null);
   const docRef = useRef<any>(null);
@@ -100,7 +112,16 @@ const CreateContacts = () => {
   const stateRef = useRef<any>(null);
   const cityRef = useRef<any>(null);
 
+  const formattedDate = useCallback((birth: string) => {
+    const newDate = DateHelper.formatedDate(birth);
+
+    return newDate;
+  }, []);
+
   const loading = useSelector((state: StoreState) => state.contacts.loading);
+  const editingContact = useSelector(
+    (state: StoreState): IContacts[] => state.contacts.editingContact
+  );
   const contactsOriginsReducer = useSelector(
     (state: StoreState): IContactsOrigins[] => state.contacts.contactsOrigins
   );
@@ -108,44 +129,76 @@ const CreateContacts = () => {
     (state: StoreState): IContactsTypes[] => state.contacts.contactsTypes
   );
   const contactOriginReducer = useSelector(
-    (state: StoreState): IContactsOrigins => state.contacts.contactOrigin
+    (state: StoreState): IContactsOrigins[] => state.contacts.contactOrigin
   );
   const contactTypeReducer = useSelector(
-    (state: StoreState): IContactsTypes => state.contacts.contactType
+    (state: StoreState): IContactsTypes[] => state.contacts.contactType
   );
   const locale = useSelector(
     (state: StoreState): ICities => state.contacts.locale
   );
 
-  const [avatar, setAvatar] = useState("");
-  const [birthDate, setBirthDate] = useState(
-    routeParams?.contact?.Birthday ? routeParams?.contact?.Birthday : ""
+  const phoneParams: IContactsPhones[] | undefined = editingContact[0]?.Phones;
+
+  const avatarDefault =
+    "https://s3-sa-east-1.amazonaws.com/ploomescrm/avatar_default.jpg";
+
+  const [originVisible, setOriginVisible] = useState(true);
+  const [typeVisible, setTypeVisible] = useState(true);
+  const [avatar, setAvatar] = useState(
+    editingContact[0]?.AvatarUrl ? editingContact[0]?.AvatarUrl : avatarDefault
   );
-  const [address, setAdress] = useState("");
+  const [birthDate, setBirthDate] = useState(
+    editingContact[0]?.Birthday
+      ? formattedDate(editingContact[0]?.Birthday)
+      : ""
+  );
+  const [cpf, setCpf] = useState(
+    editingContact[0]?.CPF ? formattedDate(editingContact[0]?.CPF) : ""
+  );
+  const [address, setAddress] = useState("");
   const [number, setNumber] = useState("");
   const [originId, setOriginId] = useState(
-    routeParams?.contact?.Type?.Id ? routeParams?.contact?.TypeId : ""
+    editingContact[0]?.OriginId ? editingContact[0]?.OriginId : ""
   );
   const [contactTypeId, setContactTypeId] = useState(
-    routeParams?.contact?.Origin?.Id ? routeParams?.contact?.OriginId : ""
+    editingContact[0]?.TypeId ? editingContact[0]?.TypeId : ""
+  );
+
+  const [originName, setOriginName] = useState(
+    contactOriginReducer[0]?.Name
+      ? contactOriginReducer[0]?.Name
+      : "Escolha a origem"
+  );
+  const [contactTypeName, setContactTypeName] = useState(
+    contactTypeReducer[0]?.Name ? contactTypeReducer[0]?.Name : "Escolha o tipo"
   );
   const [complement, setComplement] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
-  const [cep, setCep] = useState("");
-  const [phone, setPhone] = useState<IContactsPhones>(
-    routeParams?.contact?.Phones[0]?.PhoneNumber
-      ? routeParams?.contact?.Phones[0]?.PhoneNumber
-      : ""
+  const [cep, setCep] = useState(
+    editingContact[0]?.ZipCode ? editingContact[0]?.ZipCode.toString() : ""
   );
-  const [checked, setChecked] = useState(false);
+  const [phone, setPhone] = useState(phoneParams ? phoneParams : "");
   const [isDate, setIsDate] = useState(true);
+  const [isDoc, setIsDoc] = useState(true);
   const [cepError, setCepError] = useState(false);
-  const [phoneValid, setPhoneValid] = useState("");
 
-  const avatarDefault =
-    "https://s3-sa-east-1.amazonaws.com/ploomescrm/avatar_default.jpg";
+  useEffect(() => {
+    if (editingContact) {
+      // setAvatar(editingContact[0]?.AvatarUrl as string);
+      // setBirthDate(formattedDate(editingContact[0]?.Birthday));
+      // setOriginId(editingContact[0]?.OriginId as number);
+      // setContactTypeId(editingContact[0]?.TypeId as number);
+    }
+  }, [editingContact]);
+
+  useEffect(() => {
+    if (phoneParams && phoneParams?.length > 0) {
+      setPhone(mask(phoneParams[0].PhoneNumber, ["(99) 99999-9999"]));
+    }
+  }, [phoneParams]);
 
   useEffect(() => {
     if (originId) {
@@ -219,7 +272,7 @@ const CreateContacts = () => {
         const response = await axios.get(
           `https://viacep.com.br/ws/${testi}/json`
         );
-        setAdress(response.data.logradouro);
+        setAddress(response.data.logradouro);
         setNeighborhood(response.data.bairro);
         setState(response.data.uf);
         setCity(response.data.localidade);
@@ -251,47 +304,93 @@ const CreateContacts = () => {
     }
   };
 
-  const {
-    handleChange,
-    handleSubmit,
-    setFieldTouched,
-    touched,
-    values,
-    errors,
-    isValid,
-  } = useFormik({
+  const handleCpf = (doc: string) => {
+    setCpf(mask(doc, ["999.999.999-99"]));
+  };
+
+  const verifyCpf = (doc: string) => {
+    if (doc && doc.length === 14) {
+      const validDoc = DocHelper.validateDoc(doc);
+
+      if (!validDoc) {
+        setIsDoc(false);
+      } else {
+        setIsDoc(true);
+      }
+    }
+  };
+
+  const { handleChange, handleSubmit, values, errors, isValid } = useFormik({
     validationSchema: AuthContacts,
     initialValues: {
-      doc: routeParams?.contact.CPF ? routeParams?.contact?.CPF : "",
-      name: routeParams?.contact?.Name ? routeParams?.contact?.Name : "",
-      email: routeParams?.contact.Email ? routeParams?.contact?.Email : "",
-      skype: routeParams?.contact.Skype ? routeParams?.contact?.Skype : "",
-      zipCode: routeParams?.contact.ZipCode
-        ? routeParams?.contact?.ZipCode
-        : "",
+      doc: editingContact[0] ? editingContact[0]?.CPF : "",
+      name: editingContact[0] ? editingContact[0]?.Name : "",
+      email: editingContact[0] ? editingContact[0]?.Email : "",
+      skype: editingContact[0] ? editingContact[0]?.Skype : "",
     },
     onSubmit: () => {
+      const oldProfile = editingContact[0];
+
+      const newProfile = {
+        ...oldProfile,
+        AvatarUrl: avatar,
+        Name: values.name,
+        Email: values.email,
+        Skype: values.skype,
+        Birthday: birthDate,
+        CPF: values.doc,
+        Phones: [
+          {
+            PhoneNumber: phone,
+            TypeId: contactTypeId,
+            CountryId: locale.CountryId,
+          },
+        ],
+        OriginId: originId,
+        TypeId: contactTypeId,
+        ZipCode: cep,
+        StreetAddress: address,
+        StreetAddressNumber: number,
+        StreetAddressLine2: complement,
+        Neighborhood: neighborhood,
+        CityId: locale.Id,
+        StateId: locale.StateId,
+        CountryId: locale.CountryId,
+      };
       dispatch(
-        createContactRequest({
-          avatarUrl: avatar ? avatar : avatarDefault,
-          name: values.name,
-          email: values.email,
-          skype: values.skype,
-          birthday: birthDate,
-          cpf: values.doc,
-          phoneNumber: phone,
-          originId,
-          typeId: contactTypeId,
-          zipCode,
-          streetAddress: address,
-          streetAddressNumber: number,
-          streetAddressLine2: complement,
-          neighborhood,
-          cityId: locale.Id,
-          stateId: locale.StateId,
-          countryId: locale.CountryId,
-        })
+        routeParams
+          ? updateContactRequest(newProfile, editingContact[0]?.Id)
+          : createContactRequest(
+              avatar,
+              values.name,
+              values.email,
+              values.skype,
+              birthDate,
+              values.doc,
+              phone,
+              originId,
+              contactTypeId,
+              cep,
+              address,
+              number,
+              complement,
+              neighborhood,
+              locale.Id,
+              locale.StateId,
+              locale.CountryId
+            )
       );
+      setAvatar("");
+      setBirthDate("");
+      setPhone("");
+      setOriginId("");
+      setOriginName("");
+      setContactTypeId("");
+      setContactTypeName("");
+      setAddress("");
+      setNumber("");
+      setComplement("");
+      setNeighborhood("");
     },
   });
 
@@ -311,8 +410,7 @@ const CreateContacts = () => {
       contactsOriginsReducer?.map((item) =>
         origins.push({
           label: item?.Name,
-          value: item?.Name,
-          id: item?.Id,
+          value: item,
         })
       );
 
@@ -331,12 +429,11 @@ const CreateContacts = () => {
       contactsTypesReducer?.map((item) =>
         typesContacts.push({
           label: item.Name,
-          value: item?.Name,
-          id: item?.Id,
+          value: item,
         })
       );
 
-      setContactsTypes(typesContacts as TypeSelectTypesContacts[]);
+      setContactsTypes(typesContacts);
     }
   }, [contactsTypesReducer]);
 
@@ -346,388 +443,416 @@ const CreateContacts = () => {
     }
   }, [city]);
 
+  function handleOrigin(val: any) {
+    setOriginId(val.value.Id as number);
+    setOriginName(val.value.Name as string);
+    setOriginVisible(true);
+  }
+
+  function handleType(val: any) {
+    setContactTypeId(val.value.Id);
+    setContactTypeName(val.value.Name);
+    setTypeVisible(true);
+  }
+
+  function handleNavigation() {
+    dispatch(getEditingContactSuccess([]));
+    navigation.goBack();
+  }
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Container>
-        <Body>
-          <ContainerLogo>
-            <Logo source={logo} />
-          </ContainerLogo>
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <Loading />
+        </View>
+      ) : (
+        <Container>
+          <Body>
+            <ContainerLogo>
+              <Logo source={logo} />
+            </ContainerLogo>
 
-          <Title>Cadastrar Contato</Title>
+            <Title>Cadastrar Contato</Title>
 
-          {avatar ? (
             <Avatar source={{ uri: `${avatar}` }} />
-          ) : (
-            <Avatar source={{ uri: `${avatarDefault}` }} />
-          )}
-          <LinkButton
-            style={{ alignSelf: "center" }}
-            onPress={() => chooseAvatar()}
-          >
-            Escolha uma foto
-          </LinkButton>
 
-          <Input
-            ref={nameRef}
-            label="Nome"
-            iconName="account"
-            value={values.name}
-            maxLength={250}
-            error={!!errors.name}
-            returnKeyType="next"
-            autoCorrect={false}
-            onChangeText={handleChange("name")}
-            onBlur={() => setFieldTouched("name")}
-            onSubmitEditing={() => emailRef?.current.focus()}
-          />
-          {touched.name && errors.name && <TextAlert>{errors.name}</TextAlert>}
+            <LinkButton
+              style={{ alignSelf: "center" }}
+              onPress={() => chooseAvatar()}
+            >
+              Escolha uma foto
+            </LinkButton>
 
-          <Input
-            ref={emailRef}
-            label="Email"
-            iconName="mail"
-            value={values.email}
-            maxLength={250}
-            keyboardType="email-address"
-            error={!!errors.email}
-            returnKeyType="next"
-            autoCorrect={false}
-            autoCapitalize="none"
-            onChangeText={handleChange("email")}
-            onBlur={() => setFieldTouched("email")}
-            onSubmitEditing={() => skypeRef?.current.focus()}
-          />
-          {touched.email && errors.email && (
-            <TextAlert>{errors.email}</TextAlert>
-          )}
+            <Input
+              ref={nameRef}
+              label="Nome"
+              placeholder="Digite o Nome"
+              iconName="account"
+              value={values.name}
+              maxLength={250}
+              error={!!errors.name}
+              returnKeyType="next"
+              autoCorrect={false}
+              onChangeText={handleChange("name")}
+              onSubmitEditing={() => emailRef?.current.focus()}
+            />
+            {errors.name && <TextAlert>{errors.name}</TextAlert>}
 
-          <Input
-            ref={skypeRef}
-            label="Skype"
-            iconName="skype"
-            value={values.skype}
-            maxLength={50}
-            error={!!errors.skype}
-            returnKeyType="next"
-            autoCorrect={false}
-            onChangeText={handleChange("skype")}
-            onBlur={() => setFieldTouched("skype")}
-            onSubmitEditing={() => birthDateRef?.current.focus()}
-          />
-          {touched.skype && errors.skype && (
-            <TextAlert>{errors.skype}</TextAlert>
-          )}
+            <Input
+              ref={emailRef}
+              label="Email"
+              placeholder="Digite o e-mail"
+              iconName="mail"
+              value={values.email}
+              maxLength={250}
+              keyboardType="email-address"
+              error={!!errors.email}
+              returnKeyType="next"
+              autoCorrect={false}
+              autoCapitalize="none"
+              onChangeText={handleChange("email")}
+              onSubmitEditing={() => skypeRef?.current.focus()}
+            />
+            {errors.email && <TextAlert>{errors.email}</TextAlert>}
 
-          <Input
-            ref={birthDateRef}
-            label="Data de Nascimento"
-            iconName="cake-variant"
-            value={birthDate}
-            maxLength={250}
-            keyboardType={
-              Platform.OS === "android" ? "numeric" : "numbers-and-punctuation"
-            }
-            returnKeyType="next"
-            autoCorrect={false}
-            autoCapitalize="none"
-            onChangeText={handleBirthDate}
-            onBlur={() => verifyDate(birthDate)}
-            onSubmitEditing={() => docRef?.current.focus()}
-          />
-          {!isDate && birthDate.length < 10 && (
-            <TextAlert>Digite um data válida</TextAlert>
-          )}
+            <Input
+              ref={skypeRef}
+              label="Skype"
+              placeholder="Digite o Skype"
+              iconName="skype"
+              value={values.skype}
+              maxLength={50}
+              error={!!errors.skype}
+              returnKeyType="next"
+              autoCorrect={false}
+              onChangeText={handleChange("skype")}
+              onSubmitEditing={() => birthDateRef?.current.focus()}
+            />
+            {errors.skype && <TextAlert>{errors.skype}</TextAlert>}
 
-          <InputMask
-            type="cpf"
-            label="CPF"
-            iconName="mail"
-            value={values.doc}
-            maxLength={250}
-            keyboardType={
-              Platform.OS === "android" ? "numeric" : "numbers-and-punctuation"
-            }
-            error={!!errors.doc}
-            returnKeyType="next"
-            returnKeyLabel="next"
-            autoCorrect={false}
-            autoCapitalize="none"
-            onChangeText={handleChange("doc")}
-            onBlur={() => setFieldTouched("doc")}
-            onSubmitEditing={() => phoneRef?.current.focus()}
-          />
-          {touched.doc && errors.doc && <TextAlert>{errors.doc}</TextAlert>}
+            <Input
+              ref={birthDateRef}
+              label="Data de Nascimento"
+              iconName="cake-variant"
+              value={birthDate}
+              placeholder="Digite a data de nascimento"
+              maxLength={250}
+              keyboardType={
+                Platform.OS === "android"
+                  ? "numeric"
+                  : "numbers-and-punctuation"
+              }
+              returnKeyType="next"
+              autoCorrect={false}
+              autoCapitalize="none"
+              onChangeText={handleBirthDate}
+              onEndEditing={() => verifyDate(birthDate)}
+              onSubmitEditing={() => docRef?.current.focus()}
+            />
+            {!isDate && birthDate.length < 10 && birthDate !== "" && (
+              <TextAlert>Digite um data válida</TextAlert>
+            )}
 
-          <Input
-            ref={phoneRef}
-            label="Telefone"
-            iconName="phone"
-            value={phone as string}
-            maxLength={15}
-            keyboardType={
-              Platform.OS === "android" ? "numeric" : "numbers-and-punctuation"
-            }
-            placeholder="(11) 99999-9999"
-            returnKeyType="next"
-            returnKeyLabel="next"
-            autoCorrect={false}
-            autoCapitalize="none"
-            onChangeText={handlePhone}
-            onSubmitEditing={() => cepRef?.current.focus()}
-          />
+            <InputMask
+              ref={docRef}
+              type="cpf"
+              label="CPF"
+              placeholder="Digite o CPF"
+              iconName="mail"
+              value={cpf}
+              maxLength={14}
+              keyboardType={
+                Platform.OS === "android"
+                  ? "numeric"
+                  : "numbers-and-punctuation"
+              }
+              returnKeyType="next"
+              returnKeyLabel="next"
+              autoCorrect={false}
+              autoCapitalize="none"
+              onChangeText={handleCpf}
+              onEndEditing={() => verifyCpf(cpf)}
+              onSubmitEditing={() => phoneRef?.current.focus()}
+            />
+            {!isDoc && cpf.length < 14 && cpf !== "" && (
+              <TextAlert>Digite um data válida</TextAlert>
+            )}
 
-          {/* <SelectOriginsContacts
-          label="Origem do Contato"
-          iconName="home"
-          // value={originId}
-          placeholder={"Escolha a origem do contato"}
-          onValueChange={(value) => console.log(value)}
-          items={contactsOrigins}
-          // onSubmitEditing={() => passwordRef?.current.focus()}
-        /> */}
+            <Input
+              ref={phoneRef}
+              label="Telefone"
+              iconName="phone"
+              value={phone as string}
+              maxLength={15}
+              keyboardType={
+                Platform.OS === "android"
+                  ? "numeric"
+                  : "numbers-and-punctuation"
+              }
+              placeholder="Digite o telefone"
+              returnKeyType="next"
+              returnKeyLabel="next"
+              autoCorrect={false}
+              autoCapitalize="none"
+              onChangeText={handlePhone}
+              onSubmitEditing={() => cepRef?.current.focus()}
+            />
 
-          {Platform.OS === "ios" ? (
-            <SelectArea>
-              <SelectLabelArea>
-                <SelectLabel>Origem do Contato</SelectLabel>
-              </SelectLabelArea>
-              <SelectContainer>
-                <>
-                  <SelectIcon name="home" size={18} color={theme.primary} />
-
-                  <SelectInputIOS
-                    selectedValue={originId}
-                    onValueChange={(val) => setOriginId(val)}
+            {Platform.OS === "ios" ? (
+              <SelectArea onPress={() => setOriginVisible(false)}>
+                <SelectLabelArea>
+                  <SelectLabel>Origem do Contatos</SelectLabel>
+                </SelectLabelArea>
+                {originVisible ? (
+                  <SelectContainer>
+                    <SelectIcon name="home" size={18} color={theme.primary} />
+                    <SelectInputIOS>{originName}</SelectInputIOS>
+                  </SelectContainer>
+                ) : (
+                  <PickerIOS
+                    selectedValue={originName}
+                    onValueChange={(val) => handleOrigin(val)}
                   >
                     {contactsOrigins.map((item) => (
-                      <SelectInputIOS.Item
-                        label={item.label}
-                        value={item.value}
-                      />
+                      <PickerIOS.Item label={item.label} value={item} />
                     ))}
-                  </SelectInputIOS>
-                </>
-              </SelectContainer>
-            </SelectArea>
-          ) : (
-            <SelectArea>
-              <SelectLabelArea>
-                <SelectLabel>Origem do Contato</SelectLabel>
-              </SelectLabelArea>
-              <SelectContainer>
-                <>
-                  <SelectIcon name="home" size={18} color={theme.primary} />
+                  </PickerIOS>
+                )}
+              </SelectArea>
+            ) : (
+              <SelectArea>
+                <SelectLabelArea>
+                  <SelectLabel>Origem do Contato</SelectLabel>
+                </SelectLabelArea>
+                <SelectContainer>
+                  <>
+                    <SelectIcon name="home" size={18} color={theme.primary} />
 
-                  <SelectInputAndroid
-                    selectedValue={originId}
-                    onValueChange={(val) => setOriginId(val)}
-                  >
-                    {contactsOrigins.map((item) => (
-                      <SelectInputAndroid.Item
-                        label={item.label}
-                        value={item.value}
-                      />
-                    ))}
-                  </SelectInputAndroid>
-                </>
-              </SelectContainer>
-            </SelectArea>
-          )}
+                    <SelectInputAndroid
+                      selectedValue={originName}
+                      onValueChange={(val) => handleOrigin(val)}
+                    >
+                      {contactsOrigins.map((item) => (
+                        <SelectInputAndroid.Item
+                          label={item.label}
+                          value={item}
+                        />
+                      ))}
+                    </SelectInputAndroid>
+                  </>
+                </SelectContainer>
+              </SelectArea>
+            )}
 
-          {Platform.OS === "ios" ? (
-            <SelectArea>
-              <SelectLabelArea>
-                <SelectLabel>Tipo do Contato</SelectLabel>
-              </SelectLabelArea>
-              <SelectContainer>
-                <>
-                  <SelectIcon name="home" size={18} color={theme.primary} />
-
-                  <SelectInputIOS
-                    selectedValue={contactTypeId}
-                    onValueChange={(val) => setContactTypeId(val)}
-                  >
-                    {contactsOrigins.map((item) => (
-                      <SelectInputIOS.Item
-                        label={item.label}
-                        value={item.value}
-                      />
-                    ))}
-                  </SelectInputIOS>
-                </>
-              </SelectContainer>
-            </SelectArea>
-          ) : (
-            <SelectArea>
-              <SelectLabelArea>
-                <SelectLabel>Tipo do Contato</SelectLabel>
-              </SelectLabelArea>
-              <SelectContainer>
-                <>
-                  <SelectIcon name="home" size={18} color={theme.primary} />
-
-                  <SelectInputAndroid
-                    selectedValue={contactTypeId}
-                    onValueChange={(value) => setContactTypeId(value)}
+            {Platform.OS === "ios" ? (
+              <SelectArea onPress={() => setTypeVisible(false)}>
+                <SelectLabelArea>
+                  <SelectLabel>Tipo do Contato</SelectLabel>
+                </SelectLabelArea>
+                {typeVisible ? (
+                  <SelectContainer>
+                    <SelectIcon name="home" size={18} color={theme.primary} />
+                    <SelectInputIOS>{contactTypeName}</SelectInputIOS>
+                  </SelectContainer>
+                ) : (
+                  <PickerIOS
+                    selectedValue={contactTypeName}
+                    onValueChange={(val) => handleType(val)}
                   >
                     {contactsTypes.map((item) => (
-                      <SelectInputAndroid.Item
-                        label={item.label as TypeSelectTypesContacts}
-                        value={item.value as TypeSelectTypesContacts}
-                      />
+                      <PickerIOS.Item label={item.label} value={item} />
                     ))}
-                  </SelectInputAndroid>
-                </>
-              </SelectContainer>
-            </SelectArea>
-          )}
+                  </PickerIOS>
+                )}
+              </SelectArea>
+            ) : (
+              <SelectArea>
+                <SelectLabelArea>
+                  <SelectLabel>Tipo do Contato</SelectLabel>
+                </SelectLabelArea>
+                <SelectContainer>
+                  <>
+                    <SelectIcon name="home" size={18} color={theme.primary} />
 
-          <Input
-            ref={cepRef}
-            label="CEP"
-            iconName="city"
-            secureTextEntry
-            value={cep}
-            maxLength={15}
-            placeholder="Digite sua senha"
-            keyboardType={
-              Platform.OS === "android" ? "numeric" : "numbers-and-punctuation"
-            }
-            returnKeyType="next"
-            returnKeyLabel="next"
-            autoCorrect={false}
-            autoCapitalize="none"
-            onChangeText={handleCep}
-            onBlur={() => validateCep()}
-            onEndEditing={() => validateCep()}
-          />
-          {cepError && <TextAlert>Digite um CEP válido.</TextAlert>}
+                    <SelectInputAndroid
+                      selectedValue={contactTypeName}
+                      onValueChange={(value) => handleType(value)}
+                    >
+                      {contactsTypes.map((item) => (
+                        <SelectInputAndroid.Item
+                          label={item.label}
+                          value={item}
+                        />
+                      ))}
+                    </SelectInputAndroid>
+                  </>
+                </SelectContainer>
+              </SelectArea>
+            )}
 
-          {address !== "" && (
-            <>
-              <Input
-                ref={addressRef}
-                label="Endereço"
-                iconName="home"
-                value={address}
-                maxLength={250}
-                returnKeyType="next"
-                autoCorrect={false}
-                autoCapitalize="none"
-                onChangeText={setAdress}
-                onSubmitEditing={() => numberRef?.current.focus()}
-              />
+            <Input
+              ref={cepRef}
+              label="CEP"
+              iconName="city"
+              value={cep}
+              maxLength={15}
+              placeholder="Digite o CEP"
+              keyboardType={
+                Platform.OS === "android"
+                  ? "numeric"
+                  : "numbers-and-punctuation"
+              }
+              returnKeyType="next"
+              returnKeyLabel="next"
+              autoCorrect={false}
+              autoCapitalize="none"
+              onChangeText={handleCep}
+              onEndEditing={() => validateCep()}
+            />
+            {cepError && <TextAlert>Digite um CEP válido.</TextAlert>}
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "flex-start",
-                  width: "100%",
-                }}
-              >
-                <View
-                  style={{
-                    width: "30%",
-                  }}
-                >
-                  <Input
-                    ref={numberRef}
-                    label="Número"
-                    iconName="numeric"
-                    value={number}
-                    maxLength={10}
-                    keyboardType={
-                      Platform.OS === "android"
-                        ? "numeric"
-                        : "numbers-and-punctuation"
-                    }
-                    returnKeyType="next"
-                    returnKeyLabel="next"
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                    onChangeText={setNumber}
-                    onSubmitEditing={() => complementRef?.current.focus()}
-                  />
-                </View>
+            {address !== "" && (
+              <>
+                <Input
+                  ref={addressRef}
+                  label="Endereço"
+                  iconName="home"
+                  value={address}
+                  maxLength={250}
+                  returnKeyType="next"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  onChangeText={setAddress}
+                  onSubmitEditing={() => numberRef?.current.focus()}
+                />
 
                 <View
                   style={{
-                    width: "65%",
-                    marginLeft: 15,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "flex-start",
+                    width: "100%",
                   }}
                 >
-                  <Input
-                    ref={complementRef}
-                    label="Complemento"
-                    iconName="city-variant"
-                    value={complement}
-                    maxLength={20}
-                    returnKeyType="next"
-                    returnKeyLabel="next"
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                    onChangeText={setComplement}
-                    onSubmitEditing={() => neighborhoodRef?.current.focus()}
-                  />
+                  <View
+                    style={{
+                      width: "30%",
+                    }}
+                  >
+                    <Input
+                      ref={numberRef}
+                      label="Número"
+                      iconName="numeric"
+                      value={number}
+                      maxLength={10}
+                      keyboardType={
+                        Platform.OS === "android"
+                          ? "numeric"
+                          : "numbers-and-punctuation"
+                      }
+                      returnKeyType="next"
+                      returnKeyLabel="next"
+                      autoCorrect={false}
+                      autoCapitalize="none"
+                      onChangeText={setNumber}
+                      onSubmitEditing={() => complementRef?.current.focus()}
+                    />
+                  </View>
+
+                  <View
+                    style={{
+                      width: "65%",
+                      marginLeft: 15,
+                    }}
+                  >
+                    <Input
+                      ref={complementRef}
+                      label="Complemento"
+                      iconName="city-variant"
+                      value={complement}
+                      maxLength={20}
+                      returnKeyType="next"
+                      returnKeyLabel="next"
+                      autoCorrect={false}
+                      autoCapitalize="none"
+                      onChangeText={setComplement}
+                      onSubmitEditing={() => neighborhoodRef?.current.focus()}
+                    />
+                  </View>
                 </View>
-              </View>
 
-              <Input
-                ref={neighborhoodRef}
-                label="Bairro"
-                iconName="city-variant"
-                value={neighborhood}
-                maxLength={20}
-                returnKeyType="next"
-                returnKeyLabel="next"
-                autoCorrect={false}
-                autoCapitalize="none"
-                onChangeText={setNeighborhood}
-                onSubmitEditing={() => stateRef?.current.focus()}
-              />
+                <Input
+                  ref={neighborhoodRef}
+                  label="Bairro"
+                  iconName="city-variant"
+                  value={neighborhood}
+                  maxLength={20}
+                  returnKeyType="next"
+                  returnKeyLabel="next"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  onChangeText={setNeighborhood}
+                  onSubmitEditing={() => stateRef?.current.focus()}
+                />
 
-              <Input
-                ref={stateRef}
-                label="Estado"
-                iconName="city-variant"
-                value={state}
-                maxLength={20}
-                returnKeyType="next"
-                returnKeyLabel="next"
-                autoCorrect={false}
-                autoCapitalize="none"
-                onChangeText={setState}
-                onSubmitEditing={() => cityRef?.current.focus()}
-              />
+                <Input
+                  ref={stateRef}
+                  label="Estado"
+                  iconName="city-variant"
+                  value={state}
+                  maxLength={20}
+                  returnKeyType="next"
+                  returnKeyLabel="next"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  onChangeText={setState}
+                  onSubmitEditing={() => cityRef?.current.focus()}
+                />
 
-              <Input
-                ref={cityRef}
-                label="Cidade"
-                iconName="city-variant"
-                value={city}
-                maxLength={30}
-                returnKeyType="next"
-                returnKeyLabel="next"
-                autoCorrect={false}
-                autoCapitalize="none"
-                onChangeText={setCity}
-                onSubmitEditing={handleSubmit}
-              />
-            </>
-          )}
+                <Input
+                  ref={cityRef}
+                  label="Cidade"
+                  iconName="city-variant"
+                  value={city}
+                  maxLength={30}
+                  returnKeyType="next"
+                  returnKeyLabel="next"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  onChangeText={setCity}
+                  onSubmitEditing={handleSubmit}
+                />
+              </>
+            )}
 
-          <Button
-            disabled={!isValid}
-            loading={loading}
-            loadingColor="white"
-            onPress={handleSubmit}
+            <Button
+              disabled={!isValid}
+              loading={loading}
+              loadingColor="white"
+              onPress={handleSubmit}
+            >
+              Entrar
+            </Button>
+          </Body>
+          <BackButton
+            activeOpacity={0.6}
+            style={{
+              zIndex: 50,
+              shadowColor: "#000",
+              shadowOpacity: 0.2,
+              shadowOffset: {
+                width: 4,
+                height: 4,
+              },
+              elevation: 4,
+            }}
+            onPress={() => handleNavigation()}
           >
-            Entrar
-          </Button>
-        </Body>
-      </Container>
+            <Icon name="arrow-left" size={30} color={theme.white} />
+          </BackButton>
+        </Container>
+      )}
     </SafeAreaView>
   );
 };

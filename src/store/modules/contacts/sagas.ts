@@ -11,6 +11,8 @@ import NavigationService from '../../../helpers/navigation';
 import {
   getContactsRequest,
   getContactsSuccess,
+  getEditingContactRequest,
+  getEditingContactSuccess,
   createContactRequest,
   createContactSuccess,
   updateContactRequest,
@@ -28,6 +30,7 @@ import {
   cancelLoading,
 } from './actions';
 
+import { signOutRequest } from '../auth/actions';
 import { availableButtons } from '../commons/actions';
 
 export function* getContacts() {
@@ -41,7 +44,9 @@ export function* getContacts() {
     );
 
     if (response.status === 200) {
+
       yield put(getContactsSuccess(response.data.value));
+
     }
   } catch (error) {
     if (error.response) {
@@ -55,7 +60,46 @@ export function* getContacts() {
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
+          );
+          break;
+        case 400:
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+export function* getEditingContact({ payload }: ActionType<typeof getEditingContactRequest>) {
+  try {
+    const { contactId} = payload;
+
+    const response = yield call(
+      api.get, `Contacts?$filter=Id+eq+${contactId}`, {
+        headers: {
+          "User-Key": userKey,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      yield put(getEditingContactSuccess(response.data.value));
+    }
+  } catch (error) {
+    if (error.response) {
+      switch (error.response.status) {
+        case 500:
+          break;
+        case 409:
+          break;
+        case 404:
+          break;
+        case 401:
+          Alert.alert(
+            "Opss, Erro ao efetuar o Login!",
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -70,56 +114,49 @@ export function* getContacts() {
 export function* createContact({ payload }: ActionType<typeof createContactRequest>) {
   try {
 
-    const {
-      name,
-      neighborhood,
-      zipCode,
-      originId,
-      companyId,
-      streetAddressNumber,
-      typeId,
-      phoneNumber,
-      phoneTypeId,
-      countryId,
-      fieldKey,
-      stringValue,
-    } = payload;
-
-
+    const data = {
+      AvatarUrl: payload.avatarUrl,
+      Name: payload.name,
+      Email: payload.email,
+      Skype: payload.skype,
+      Birthday: payload.birthday,
+      CPF: payload.cpf,
+      Phones: [
+        {
+          PhoneNumber: payload.phoneNumber,
+          TypeId: payload.typeId,
+          CountryId: payload.countryId,
+        }
+      ],
+      OriginId: payload.originId,
+      TypeId: payload.typeId,
+      ZipCode: payload.zipCode,
+      StreetAddress: payload.streetAddress,
+      StreetAddressNumber: payload.streetAddressNumber,
+      StreetAddressLine2: payload.streetAddressLine2,
+      Neighborhood: payload.neighborhood,
+      CityId: payload.cityId,
+      StateId: payload.stateId,
+      CountryId: payload.countryId,
+    };
 
     const response = yield call(
-      api.post,
-      "Self/Login", {
-        "Name": "Pessoa Nova",
-        "Neighborhood": "Pinheiros",
-        "ZipCode": 0,
-        "OriginId": 0,
-        "CompanyId": null,
-        "StreetAddressNumber": "XXX",
-        "TypeId": 0,
-        "Phones": [
-            {
-                "PhoneNumber": "(XX) XXXX-XXXX",
-                "TypeId": 0,
-                "CountryId": 0
-            }
-        ],
-        "OtherProperties": [
-            {
-                "FieldKey": "{fieldKey}",
-                "StringValue": "texto exemplo"
-            },
-            {
-                "FieldKey": "{fieldKey}",
-                "IntegerValue": 2
-            }
-        ]
-    }
+      api.post, "Contacts", data, {
+        headers: {
+          "User-Key": userKey,
+        },
+      }
     );
 
     if (response.status === 200) {
       yield put(availableButtons(true));
       yield put(cancelLoading());
+      yield put(createContactSuccess());
+      yield put(getContactsRequest());
+      Alert.alert(
+        "Parabéns!",
+        "Contato cadastrado com sucesso."
+      );
     }
   } catch (error) {
     yield put(availableButtons(true));
@@ -135,7 +172,7 @@ export function* createContact({ payload }: ActionType<typeof createContactReque
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -151,9 +188,6 @@ export function* updateContact({ payload }: ActionType<typeof updateContactReque
   try {
     const {newProfile, contactId} = payload;
 
-    console.tron.log(newProfile);
-
-
     const response = yield call(
       api.put, `Contacts(${contactId})`, {
         data: newProfile,
@@ -165,6 +199,7 @@ export function* updateContact({ payload }: ActionType<typeof updateContactReque
 
     if (response.status === 200) {
       yield put(getContactsRequest());
+      yield put(updateContactSuccess([]));
       NavigationService.navigate({ routeName:'Contatos' });
     }
   } catch (error) {
@@ -179,7 +214,7 @@ export function* updateContact({ payload }: ActionType<typeof updateContactReque
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -219,7 +254,7 @@ export function* deleteContact({ payload }: ActionType<typeof deleteContactReque
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -256,7 +291,7 @@ export function* getOriginsContacts() {
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -270,8 +305,7 @@ export function* getOriginsContacts() {
 
 export function* getTypesContacts() {
   try {
-    const response = yield call(
-      api.get, 'Contacts@Types', {
+    const response = yield call(api.get, 'Contacts@Types', {
         headers: {
           "User-Key": userKey,
         },
@@ -293,7 +327,7 @@ export function* getTypesContacts() {
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -337,7 +371,7 @@ export function* getCity({
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -376,7 +410,7 @@ export function* getOriginContact({ payload }: ActionType<typeof getOriginContac
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -416,7 +450,7 @@ export function* getTypeContact({ payload }: ActionType<typeof getTypeContactReq
         case 401:
           Alert.alert(
             "Opss, Erro ao efetuar o Login!",
-            "Verifique os dados e tente novamente."
+            "Verifique os dados e/ou faça Login novamente."
           );
           break;
         case 400:
@@ -430,6 +464,7 @@ export function* getTypeContact({ payload }: ActionType<typeof getTypeContactReq
 
 export default all([
   takeLatest('@contacts/GET_CONTACTS_REQUEST', getContacts),
+  takeLatest('@contacts/GET_EDITING_CONTACT_REQUEST', getEditingContact),
   takeLatest('@contacts/CREATE_CONTACT_REQUEST', createContact),
   takeLatest('@contacts/UPDATE_CONTACT_REQUEST', updateContact),
   takeLatest('@contacts/DELETE_CONTACTS_REQUEST', deleteContact),
@@ -438,5 +473,4 @@ export default all([
   takeLatest('@contacts/GET_CITIES_REQUEST', getCity),
   takeLatest('@contacts/GET_ORIGIN_CONTACT_REQUEST', getOriginContact),
   takeLatest('@contacts/GET_TYPE_CONTACT_REQUEST', getTypeContact),
-  // takeLatest('@contacts/REQUEST_CREATE_PROFILE', createProfile),
 ]);

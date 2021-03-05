@@ -2,10 +2,9 @@ import styled, {css} from 'styled-components/native';
 import { Platform } from 'react-native';
 import {RFValue} from 'react-native-responsive-fontsize'
 import {
-  heightPercentageToDP as hp
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp
 } from 'react-native-responsive-screen';
-// import RNPickerSelect from "react-native-picker-select";
-import {Picker, PickerIOS} from '@react-native-picker/picker';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import theme from '../../styles/themes/theme';
@@ -100,4 +99,16 @@ export const IconsArea = styled.View`
   justify-content: space-around;
   align-self: center;
   flex-direction: column;
+`;
+
+export const AddButton = styled.TouchableOpacity`
+  background-color: ${theme.primary};
+  position: absolute;
+  height: ${wp('17%')};
+  width: ${wp('17%')};
+  border-radius: 50;
+  bottom: ${Platform.OS === 'ios' ? hp('2%') : hp('1%')};
+  right: ${wp('3.8%')};
+  justify-content: center;
+  align-items: center;
 `;

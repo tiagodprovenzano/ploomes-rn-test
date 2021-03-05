@@ -12,7 +12,7 @@ function setTopLevelNavigator(navigatorRef: any) {
 }
 
 function navigate({ routeName, params }: Props) {
-  navigator.dispatch(
+  navigator?.dispatch(
     NavigationActions.navigate({
       routeName,
       params,

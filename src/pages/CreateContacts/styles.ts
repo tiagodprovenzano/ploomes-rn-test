@@ -2,12 +2,11 @@ import styled, {css} from 'styled-components/native';
 import { Platform } from 'react-native';
 import {RFValue} from 'react-native-responsive-fontsize'
 import {
-  heightPercentageToDP as hp
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp
 } from 'react-native-responsive-screen';
-// import RNPickerSelect from "react-native-picker-select";
-import {Picker, PickerIOS} from '@react-native-picker/picker';
+import {Picker} from '@react-native-picker/picker';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-
 
 import theme from '../../styles/themes/theme';
 
@@ -61,7 +60,7 @@ export const Avatar = styled.Image`
   align-self: center;
 `;
 
-export const SelectArea = styled.View`
+export const SelectArea = styled.TouchableOpacity`
 `;
 
 export const SelectLabelArea = styled.View`
@@ -116,16 +115,33 @@ export const SelectInputAndroid = styled(Picker)`
   z-index: 999;
 `;
 
-export const SelectInputIOS = styled(PickerIOS)`
+export const SelectInputIOS = styled.Text`
   color: ${theme.dark};
   font-size: ${RFValue(theme.fontSize)};
   font-family: ${theme.fontFamilyNormal};
   flex: 1;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
   z-index: 999;
 `;
 
 export const SelectIcon = styled(MaterialIcon)`
   margin-right: 16px;
+`;
+
+export const Loading = styled.ActivityIndicator.attrs({
+  color: theme.primary,
+  size: 'large',
+})``;
+
+export const BackButton = styled.TouchableOpacity`
+  background-color: ${theme.primary};
+  position: absolute;
+  height: ${wp('17%')};
+  width: ${wp('17%')};
+  border-radius: 50;
+  top: ${Platform.OS === 'ios' ? hp('2%') : hp('1%')};
+  left: ${wp('3.8%')};
+  justify-content: center;
+  align-items: center;
 `;

@@ -4,12 +4,12 @@ import React, {
   forwardRef,
   useState,
   useCallback,
-} from 'react';
-import { TextInputProps, StyleSheetProperties, View } from 'react-native';
+} from "react";
+import { TextInputProps, View } from "react-native";
 
-import theme from '../../styles/themes/theme';
+import theme from "../../styles/themes/theme";
 
-import { Container, TextInput, Icon, Label } from './styles';
+import { Container, TextInput, Icon, Label } from "./styles";
 
 interface InputProps extends TextInputProps {
   iconName: string;
@@ -23,7 +23,7 @@ interface InputRef {
 
 const Input: React.ForwardRefRenderFunction<InputRef, InputProps> = (
   { iconName, label, error, ...rest },
-  ref,
+  ref
 ) => {
   const inputRef = useRef<any>();
   const [focus, setFocus] = useState(false);
@@ -43,7 +43,7 @@ const Input: React.ForwardRefRenderFunction<InputRef, InputProps> = (
 
   return (
     <>
-      <View style={{ alignSelf: 'flex-start' }}>
+      <View style={{ alignSelf: "flex-start" }}>
         <Label>{label}</Label>
       </View>
       <Container error={error} isFocused={focus}>

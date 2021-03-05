@@ -1,3 +1,8 @@
+import { enableMapSet } from 'immer'
+
+enableMapSet();
+
+
 import {
   createStore,
   compose,

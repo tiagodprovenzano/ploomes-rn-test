@@ -49,7 +49,7 @@ const InputMask: React.ForwardRefRenderFunction<InputRef, InputProps> = (
   return (
     <>
       <View style={{ alignSelf: "flex-start" }}>
-        <Label style={{}}>{label}</Label>
+        <Label>{label}</Label>
       </View>
       <Container error={error} isFocused={focus}>
         <>

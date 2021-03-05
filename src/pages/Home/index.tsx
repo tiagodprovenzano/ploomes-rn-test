@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Platform } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { IContacts } from "@ploomes/ploomeststypes";
@@ -10,7 +11,10 @@ import type { StoreState } from "../../store";
 
 import DateHelper from "../../helpers/dateValidate";
 
-import { getContactsRequest } from "../../store/modules/contacts/actions";
+import {
+  getContactsRequest,
+  getEditingContactSuccess,
+} from "../../store/modules/contacts/actions";
 
 import ContactDeleteConfirm from "../../components/ContactDeleteConfirm";
 
@@ -26,6 +30,7 @@ import {
   InfoName,
   InfoText,
   IconsArea,
+  AddButton,
 } from "./styles";
 
 const Home = () => {
@@ -38,6 +43,10 @@ const Home = () => {
   const [contacts, setContacts] = useState<IContacts[]>([] as IContacts[]);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [contactId, setContactId] = useState<string>("");
+
+  const editingContact = useSelector(
+    (state: StoreState): IContacts[] => state.contacts.editingContact
+  );
 
   useEffect(() => {
     dispatch(getContactsRequest());
@@ -54,17 +63,20 @@ const Home = () => {
     setContactId(id);
   }, []);
 
-  const handleEditContact = useCallback((contatc) => {
-    navigation.navigate("Contato", { contatc });
+  const handleEditContact = useCallback((contatcId) => {
+    navigation.navigate("CreateContacts", { contatcId });
   }, []);
 
   const formattedDate = useCallback((date) => {
-    console.log(typeof date);
-
     const newDate = DateHelper.formatedDate(date);
 
     return newDate;
   }, []);
+
+  function handleNavigation() {
+    dispatch(getEditingContactSuccess([]));
+    navigation.navigate("CreateContacts");
+  }
 
   return (
     <Container>
@@ -136,7 +148,7 @@ const Home = () => {
                   size={20}
                   color={theme.primary}
                   style={{ paddingVertical: 10 }}
-                  onPress={() => handleEditContact(item)}
+                  onPress={() => handleEditContact(item.Id)}
                 />
                 <Icon
                   name="delete"
@@ -154,6 +166,22 @@ const Home = () => {
           setOpenDeleteModal={setOpenDeleteModal}
           contactId={contactId}
         />
+        <AddButton
+          activeOpacity={0.6}
+          style={{
+            zIndex: 50,
+            shadowColor: "#000",
+            shadowOpacity: 0.2,
+            shadowOffset: {
+              width: 4,
+              height: 4,
+            },
+            elevation: 4,
+          }}
+          onPress={() => handleNavigation()}
+        >
+          <Icon name="plus" size={30} color={theme.white} />
+        </AddButton>
       </Body>
     </Container>
   );

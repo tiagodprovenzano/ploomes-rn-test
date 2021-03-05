@@ -10,6 +10,7 @@ const INITIAL_STATE: ContactsState = {
   contactsTypes: [],
   contactOrigin: [],
   contactType: [],
+  editingContact: [],
 };
 
 export default function auth(state = INITIAL_STATE, action: ContactsAction) {
@@ -59,6 +60,20 @@ export default function auth(state = INITIAL_STATE, action: ContactsAction) {
       }
       case '@contacts/GET_TYPE_CONTACT_SUCCESS': {
         draft.contactType = action.payload.contactType;
+        break;
+      }
+      case '@contacts/GET_EDITING_CONTACT_REQUEST': {
+        draft.loading = true;
+        break;
+      }
+      case '@contacts/GET_EDITING_CONTACT_SUCCESS': {
+        draft.loading = false;
+        draft.editingContact = action.payload.editingContact;
+        break;
+      }
+      case '@contacts/UPDATE_CONTACT_SUCCESS': {
+        draft.loading = false;
+        draft.editingContact = [];
         break;
       }
       default:
