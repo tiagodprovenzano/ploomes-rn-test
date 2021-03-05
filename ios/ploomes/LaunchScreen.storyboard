@@ -29,11 +29,11 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Image" translatesAutoresizingMaskIntoConstraints="NO" id="Tc3-3n-MNL">
-                                <rect key="frame" x="67" y="212" width="240" height="128"/>
+                                <rect key="frame" x="67" y="281" width="240" height="128"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" text="Ploomes" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="J0l-Os-RCf">
-                                <rect key="frame" x="101" y="348" width="172" height="66"/>
+                                <rect key="frame" x="101" y="417" width="172" height="66"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <color key="textColor" red="0.46666666666666667" green="0.37254901960784315" blue="0.80000000000000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

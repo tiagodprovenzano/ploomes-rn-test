@@ -26,8 +26,6 @@ import AuthContacts from "../../validations/authContacts";
 import DateHelper from "../../helpers/dateValidate";
 import DocHelper from "../../helpers/docValidate";
 
-import NavigationService from "../../helpers/navigation";
-
 import type { StoreState } from "../../store";
 
 import { sendImageAvatar } from "../../utils/sendImageAvatar";

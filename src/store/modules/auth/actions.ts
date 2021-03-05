@@ -15,7 +15,7 @@ export function signInFailure() {
   return action('@auth/SIGN_IN_FAILURE');
 }
 
-export function signOutRequest() {
+export function signOut() {
   return action('@auth/SIGN_OUT');
 }
 

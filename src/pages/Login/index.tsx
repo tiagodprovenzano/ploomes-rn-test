@@ -26,10 +26,8 @@ const Login: React.FC = () => {
   const { handleChange, handleSubmit, values, errors, isValid } = useFormik({
     validationSchema: AuthLogin,
     initialValues: {
-      email: "candidato.mobile.300@teste.com",
-      password: "1234",
-      // email: '',
-      // password: '',
+      email: "",
+      password: "",
     },
     onSubmit: () => {
       dispatch(signInRequest(values.email, values.password));

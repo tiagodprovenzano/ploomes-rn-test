@@ -30,7 +30,6 @@ import {
   cancelLoading,
 } from './actions';
 
-import { signOutRequest } from '../auth/actions';
 import { availableButtons } from '../commons/actions';
 
 export function* getContacts() {
@@ -188,9 +187,10 @@ export function* updateContact({ payload }: ActionType<typeof updateContactReque
   try {
     const {newProfile, contactId} = payload;
 
+    const data = newProfile;
+
     const response = yield call(
-      api.put, `Contacts(${contactId})`, {
-        data: newProfile,
+      api.put, `Contacts(${contactId})`, data, {
         headers: {
           "User-Key": userKey,
         },

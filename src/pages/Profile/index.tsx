@@ -16,7 +16,7 @@ import { ISelf } from "@ploomes/ploomeststypes";
 
 import type { StoreState } from "../../store";
 
-import { signOutRequest } from "../../store/modules/auth/actions";
+import { signOut } from "../../store/modules/auth/actions";
 
 import Button from "../../components/Button";
 
@@ -54,7 +54,7 @@ export default function ProfessionalProfile() {
   );
 
   function handleSignOut() {
-    dispatch(signOutRequest());
+    dispatch(signOut());
   }
 
   return (

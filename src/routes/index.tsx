@@ -9,15 +9,7 @@ import HomeStack from "./home.routes";
 import { StoreState } from "../store";
 
 export default function Routes() {
-  const signedReducer = useSelector((state: StoreState) => state.auth.signed);
-
-  const [signed, setSigned] = useState(false);
-
-  useEffect(() => {
-    if (signedReducer) {
-      setSigned(true);
-    }
-  }, [signedReducer]);
+  const signed = useSelector((state: StoreState) => state.auth.signed);
 
   return (
     <NavigationContainer>
