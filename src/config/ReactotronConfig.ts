@@ -10,7 +10,7 @@ declare global {
 }
 
 if (__DEV__) {
-  const tron = Reactotron.configure({ host: '192.168.0.13'})
+  const tron = Reactotron.configure()
     .setAsyncStorageHandler(AsyncStorage)
     .use(reactotronRedux())
     .use(sagaPlugin({ except: [''] }))
